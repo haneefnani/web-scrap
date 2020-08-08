@@ -1,7 +1,7 @@
 from requests import get
 import bs4
 import csv
-csv_file=open('abc.csv','a')
+csv_file=open('abc.csv','a',encoding='utf-8')
 csv_writer=csv.writer(csv_file,quoting=csv.QUOTE_ALL)
 
 with open('urls.txt') as file:
