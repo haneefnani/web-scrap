@@ -8,6 +8,7 @@ import time
 import bs4
 import csv
 
+
 def save_cookie():
     pickle.dump(driver.get_cookies(), open(r"glassdoor_cookies.pkl", "wb"))
 
@@ -31,55 +32,77 @@ driver.refresh()
 # time.sleep(2)
 # driver.quit()
 
-urls = ['https://www.glassdoor.co.in/Interview/hyderabad-software-engineer-interview-questions-SRCH_IL.0,9_IM1076_KO10,27.htm', 'https://www.glassdoor.co.in/Interview/hyderabad-data-analyst-interview-questions-SRCH_IL.0,9_IM1076_KO10,22.htm',
-        'https://www.glassdoor.co.in/Interview/hyderabad-business-analyst-interview-questions-SRCH_IL.0,9_IM1076_KO10,26.htm', 'https://www.glassdoor.co.in/Interview/hyderabad-data-scientist-interview-questions-SRCH_IL.0,9_IM1076_KO10,24.htm', 'https://www.glassdoor.co.in/Interview/hyderabad-senior-software-engineer-interview-questions-SRCH_IL.0,9_IM1076_KO10,34.htm', 'https://www.glassdoor.co.in/Interview/hyderabad-financial-analyst-interview-questions-SRCH_IL.0,9_IM1076_KO10,27.htm', 'https://www.glassdoor.co.in/Interview/hyderabad-associate-interview-questions-SRCH_IL.0,9_IM1076_KO10,19.htm', 'https://www.glassdoor.co.in/Interview/hyderabad-analyst-interview-questions-SRCH_IL.0,9_IM1076_KO10,17.htm', 'https://www.glassdoor.co.in/Interview/hyderabad-research-analyst-interview-questions-SRCH_IL.0,9_IM1076_KO10,26.htm', 'https://www.glassdoor.co.in/Interview/hyderabad-senior-analyst-interview-questions-SRCH_IL.0,9_IM1076_KO10,24.htm', 'https://www.glassdoor.co.in/Interview/hyderabad-intern-interview-questions-SRCH_IL.0,9_IM1076_KO10,16.htm']
+urls = ['https://www.glassdoor.co.in/Interview/hyderabad-analyst-interview-questions-SRCH_IL.0,9_IM1076_KO10,17.htm',
+         'https://www.glassdoor.co.in/Interview/hyderabad-associate-interview-questions-SRCH_IL.0,9_IM1076_KO10,19.htm',
+         'https://www.glassdoor.co.in/Interview/hyderabad-business-analyst-interview-questions-SRCH_IL.0,9_IM1076_KO10,26.htm',
+         'https://www.glassdoor.co.in/Interview/hyderabad-data-analyst-interview-questions-SRCH_IL.0,9_IM1076_KO10,22.htm',
+         'https://www.glassdoor.co.in/Interview/hyderabad-data-scientist-interview-questions-SRCH_IL.0,9_IM1076_KO10,24.htm',
+         'https://www.glassdoor.co.in/Interview/hyderabad-financial-analyst-interview-questions-SRCH_IL.0,9_IM1076_KO10,27.htm',
+         'https://www.glassdoor.co.in/Interview/hyderabad-intern-interview-questions-SRCH_IL.0,9_IM1076_KO10,16.htm',
+         'https://www.glassdoor.co.in/Interview/hyderabad-research-analyst-interview-questions-SRCH_IL.0,9_IM1076_KO10,26.htm',
+         'https://www.glassdoor.co.in/Interview/hyderabad-senior-analyst-interview-questions-SRCH_IL.0,9_IM1076_KO10,24.htm',
+         'https://www.glassdoor.co.in/Interview/hyderabad-senior-software-engineer-interview-questions-SRCH_IL.0,9_IM1076_KO10,34.htm',
+         'https://www.glassdoor.co.in/Interview/hyderabad-software-development-engineer-interview-questions-SRCH_IL.0,9_IM1076_KO10,39.htm',
+         'https://www.glassdoor.co.in/Interview/hyderabad-software-engineer-interview-questions-SRCH_IL.0,9_IM1076_KO10,27.htm']
 
-for this_url in urls:
-    driver.get(this_url)
-    response = bs4.BeautifulSoup(driver.page_source, 'html.parser')
-    file_name=response.find('h1', class_='noMarg').text+'.csv'
-    file = open(file_name, 'w', encoding='utf-8')
-    csv_writer = csv.writer(file)
-    csv_writer.writerow(['Question','Answers-->'])
-    no_of_pages = int(response.find(
-        'div', class_='reviewCount cell span-1-2 drop').text.replace(',', '')) // 10 + 1
-    to_next_page = 0
-    for num in range(no_of_pages-1):
+file2 = open('total_pages.txt', 'r')
+loo = file2.readlines()
+file2.close()
 
+for i, url in enumerate(loo):
+    this_url=url[:-1]
+    if this_url not in urls:
+        print(f'\n{i}th URL\n')
+        driver.get(this_url)
         response = bs4.BeautifulSoup(driver.page_source, 'html.parser')
-        print(f'{to_next_page+1}th page')
- 
-        a = 0
-        for i in response.findAll('div', class_='interviewQuestionWrapper padVertLg'):
+        file_name = response.find('h1', class_='noMarg').text+'.csv'
+        file = open('./csv/glassdoor/'+file_name, 'w', encoding='utf-8')
+        csv_writer = csv.writer(file)
+        csv_writer.writerow(['Question', 'Answers-->'])
+        number_in_page = int(response.find('div', class_='reviewCount cell span-1-2 drop').text.replace(',', ''))
+        if (number_in_page // 10 ) in [0,1]:
+            no_of_pages=number_in_page // 10 + 1
+        else:
+            no_of_pages = number_in_page // 10 + 1 + 4
+        current_page = 1
+        for num in range(no_of_pages):
 
-            l, l2 = [], []
-            try:
-                # print('\n Heading : ',i.find('p',class_='questionText h3').text+'\n')
-                l.append(i.find('p', class_='questionText h3').text.strip())
-            except:
-                pass
-            try:
-                # for remaining answers
-                for j in i.findAll('p', class_='cell noMargVert padVert borderBot'):
-                    # print(a+1,j.text)
-                    l2.append(j.text.strip())
-            except:
-                pass
-            try:
-                #for first answer
-                for j in i.findAll('p', class_='cell noMargVert padTop tightBot'):
-                    # print(a+1,j.text)
-                    l2.append(j.text.strip())
-                    # a+=1
-            except:
-                pass
-            csv_writer.writerow(l+l2)
-        to_next_page += 1
+            response = bs4.BeautifulSoup(driver.page_source, 'html.parser')
+            print(f'{current_page}th page')
+            a = 0
+            for i in response.findAll('div', class_='interviewQuestionWrapper padVertLg'):
 
-        print('going to next page......')
-        # driver.get('http://glassdoor.co.in'+response.find('li',class_='next').a['href'])
-        try:
-            driver.get(this_url[:-4]+'_IP'+str(num)+this_url[-4:])
-        except:
-            print('\n\nStopped------------------------------------------------------------------->')
-    file.close()
+                l, l2 = [], []
+                try:
+                    # print('\n Heading : ',i.find('p',class_='questionText h3').text+'\n')
+                    l.append(i.find('p', class_='questionText h3').text.strip())
+                except:
+                    pass
+                try:
+                    # for remaining answers
+                    for j in i.findAll('p', class_='cell noMargVert padVert borderBot'):
+                        # print(a+1,j.text)
+                        l2.append(j.text.strip())
+                except:
+                    pass
+                try:
+                    # for first answer
+                    for j in i.findAll('p', class_='cell noMargVert padTop tightBot'):
+                        # print(a+1,j.text)
+                        l2.append(j.text.strip())
+                        # a+=1
+                except:
+                    pass
+                csv_writer.writerow(l+l2)
+            current_page += 1
+
+            print('going to next page......')
+            # driver.get('http://glassdoor.co.in'+response.find('li',class_='next').a['href'])
+            if current_page != no_of_pages+1 :
+                try:
+                    driver.get(this_url[:-4] + '_IP' + str(num) + this_url[-4:])
+                except:
+                    print('\n\nStopped------------------------------------------------------------------->')
+            else:
+                print('-------------------last page--------------------------')
+        file.close()
