@@ -9,7 +9,8 @@ csv_writer = csv.writer(csv_file, quoting=csv.QUOTE_ALL)
 
 # url = 'https://www.healthifyme.com/blog/post-sitemap.xml'
 
-for url in l[0:1]:
+for i,url in enumerate(l,1):
+    print(f'{i}th url')
     l=[]
     res = get(url[:-1])
     response = bs4.BeautifulSoup(res.text, 'html.parser')
